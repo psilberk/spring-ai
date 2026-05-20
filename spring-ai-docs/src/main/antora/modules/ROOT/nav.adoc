@@ -43,6 +43,7 @@
 **** xref:api/embeddings/ollama-embeddings.adoc[Ollama]
 **** xref:api/embeddings/onnx.adoc[(ONNX) Transformers]
 **** xref:api/embeddings/openai-embeddings.adoc[OpenAI]
+**** xref:api/embeddings/oracle-embeddings.adoc[Oracle]
 **** xref:api/embeddings/postgresml-embeddings.adoc[PostgresML]
 **** xref:api/embeddings/qianfan-embeddings.adoc[QianFan]
 **** VertexAI
