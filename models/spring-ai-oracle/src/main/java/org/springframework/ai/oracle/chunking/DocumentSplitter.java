@@ -112,9 +112,7 @@ public class DocumentSplitter extends TextSplitter {
 		try (Connection connection = this.dataSource.getConnection();
 				PreparedStatement statement = connection.prepareStatement(CHUNKING_SQL)) {
 
-			Clob clob = connection.createClob();
-			clob.setString(1, text);
-			statement.setObject(1, clob);
+			statement.setString(1, text);
 			if (this.preferencesOson == null) {
 				statement.setNull(2, OracleTypes.JSON);
 			}
