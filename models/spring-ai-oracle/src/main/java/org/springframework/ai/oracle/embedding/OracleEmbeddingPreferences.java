@@ -1,17 +1,6 @@
 /*
- * Copyright 2023-present the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
  */
 
 package org.springframework.ai.oracle.embedding;
@@ -47,7 +36,7 @@ public final class OracleEmbeddingPreferences {
 	private final String model;
 
 	@JsonProperty("credential_name")
-	private final @Nullable String credentialName;
+	private final String credentialName;
 
 	@JsonProperty("url")
 	private final @Nullable String url;
@@ -71,9 +60,8 @@ public final class OracleEmbeddingPreferences {
 	 * @param maxCount maximum input count
 	 * @param batchSize batch size
 	 */
-	private OracleEmbeddingPreferences(String provider, String model, @Nullable String credentialName,
-			@Nullable String url, @Nullable Integer transferTimeout, @Nullable Integer maxCount,
-			@Nullable Integer batchSize) {
+	private OracleEmbeddingPreferences(String provider, String model, String credentialName, @Nullable String url,
+			@Nullable Integer transferTimeout, @Nullable Integer maxCount, @Nullable Integer batchSize) {
 		this.provider = provider;
 		this.model = model;
 		this.credentialName = credentialName;
@@ -111,7 +99,7 @@ public final class OracleEmbeddingPreferences {
 	 * Return optional Oracle credential name.
 	 * @return credential name
 	 */
-	public @Nullable String getCredentialName() {
+	public String getCredentialName() {
 		return this.credentialName;
 	}
 
@@ -171,7 +159,7 @@ public final class OracleEmbeddingPreferences {
 
 		private @Nullable String model;
 
-		private @Nullable String credentialName;
+		private String credentialName;
 
 		private @Nullable String url;
 
