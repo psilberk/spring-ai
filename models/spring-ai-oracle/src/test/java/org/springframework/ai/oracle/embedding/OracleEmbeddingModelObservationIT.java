@@ -16,6 +16,7 @@
 
 package org.springframework.ai.oracle.embedding;
 
+import java.io.IOException;
 import java.sql.Array;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -26,6 +27,7 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.tck.TestObservationRegistry;
 import io.micrometer.observation.tck.TestObservationRegistryAssert;
 import oracle.jdbc.OracleConnection;
@@ -40,7 +42,6 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.observation.DefaultEmbeddingModelObservationConvention;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationDocumentation.HighCardinalityKeyNames;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationDocumentation.LowCardinalityKeyNames;
-import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.observation.conventions.AiOperationType;
 import org.springframework.ai.oracle.chunking.OracleChunk;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -71,6 +72,8 @@ class OracleEmbeddingModelObservationIT {
 		.provider("database")
 		.model(ONNX_MODEL_NAME)
 		.build();
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private static volatile boolean onnxModelPrepared;
 
@@ -160,7 +163,7 @@ class OracleEmbeddingModelObservationIT {
 			boolean available = isUtlToEmbeddingsInvokable(connection);
 			Assertions.assertTrue(available, "DBMS_VECTOR_CHAIN.UTL_TO_EMBEDDINGS is not available.");
 		}
-		catch (SQLException ex) {
+		catch (SQLException | IOException ex) {
 			Assertions.fail("Could not verify UTL_TO_EMBEDDINGS availability.", ex);
 		}
 	}
@@ -208,8 +211,9 @@ class OracleEmbeddingModelObservationIT {
 	 * @param connection JDBC connection
 	 * @return {@code true} when invokable
 	 * @throws SQLException on unexpected SQL failures
+	 * @throws IOException on payload serialization failures
 	 */
-	private static boolean isUtlToEmbeddingsInvokable(Connection connection) throws SQLException {
+	private static boolean isUtlToEmbeddingsInvokable(Connection connection) throws SQLException, IOException {
 		try (PreparedStatement statement = connection.prepareStatement(UTL_TO_EMBEDDINGS_SQL)) {
 			statement.setObject(1, createVectorArrayPayload(connection, List.of("probe")));
 			statement.setObject(2, ONNX_PREFERENCES.toByteArray(), OracleTypes.JSON);
@@ -231,13 +235,15 @@ class OracleEmbeddingModelObservationIT {
 	 * @param inputs text inputs
 	 * @return Oracle array payload
 	 * @throws SQLException on JDBC failures
+	 * @throws IOException on payload serialization failures
 	 */
-	private static Array createVectorArrayPayload(Connection connection, List<String> inputs) throws SQLException {
+	private static Array createVectorArrayPayload(Connection connection, List<String> inputs)
+			throws SQLException, IOException {
 		OracleConnection oracleConnection = connection.unwrap(OracleConnection.class);
 		Clob[] payload = new Clob[inputs.size()];
 		for (int i = 0; i < inputs.size(); i++) {
 			Clob clob = connection.createClob();
-			clob.setString(1, ModelOptionsUtils.JSON_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
+			clob.setString(1, OBJECT_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
 			payload[i] = clob;
 		}
 		return oracleConnection.createOracleArray("SYS.VECTOR_ARRAY_T", payload);

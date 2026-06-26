@@ -42,11 +42,12 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for Oracle {@link DocumentSplitter} with a real Oracle database.
+ * Integration tests for Oracle {@link OracleDocumentSplitter} with a real Oracle
+ * database.
  *
  * @author Spring AI Contributors
  */
-class DocumentSplitterIT {
+class OracleDocumentSplitterIT {
 
 	private static final String UTL_TO_CHUNKS_SQL = "select json_value(t.column_value, '$.chunk_data' returning clob) "
 			+ "as chunk_data from dbms_vector_chain.utl_to_chunks(?, ?) t";
@@ -81,7 +82,7 @@ class DocumentSplitterIT {
 	@DisplayName("split string input by chars")
 	void splitStringInputByChars() {
 		assertUtlToChunksAvailable();
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource())
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource())
 			.preferences(OracleChunkingPreferences.builder().by("chars").max(50).build())
 			.build();
 
@@ -97,7 +98,7 @@ class DocumentSplitterIT {
 	@DisplayName("split string input with default constructor")
 	void splitStringInputWithDefaultConstructor() {
 		assertUtlToChunksAvailable();
-		DocumentSplitter splitter = new DocumentSplitter(dataSource());
+		OracleDocumentSplitter splitter = new OracleDocumentSplitter(dataSource());
 
 		List<Document> chunks = splitter.split(new Document(CONTENT));
 
@@ -112,7 +113,7 @@ class DocumentSplitterIT {
 	@DisplayName("split string input by words")
 	void splitStringInputByWords() {
 		assertUtlToChunksAvailable();
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource())
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource())
 			.preferences(OracleChunkingPreferences.builder().by("words").max(50).build())
 			.build();
 
@@ -130,7 +131,7 @@ class DocumentSplitterIT {
 	void splitDocInputByChars() {
 		assertUtlToChunksAvailable();
 		Document source = new Document(CONTENT, Map.of("a", 1, "b", 2));
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource())
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource())
 			.preferences(OracleChunkingPreferences.builder().by("chars").max(50).build())
 			.build();
 
@@ -150,7 +151,7 @@ class DocumentSplitterIT {
 	void splitDocInputWithNullPreferences() {
 		assertUtlToChunksAvailable();
 		Document source = new Document(CONTENT, Map.of("source", "it", "version", 1));
-		DocumentSplitter splitter = new DocumentSplitter(dataSource());
+		OracleDocumentSplitter splitter = new OracleDocumentSplitter(dataSource());
 
 		List<Document> chunks = splitter.split(source);
 
@@ -166,7 +167,7 @@ class DocumentSplitterIT {
 	@DisplayName("split string input with split and overlap preference")
 	void splitStringInputWithSplitAndOverlapPreference() {
 		assertUtlToChunksAvailable();
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource())
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource())
 			.preferences(OracleChunkingPreferences.builder().by("words").max(50).split("sentence").build())
 			.build();
 
@@ -182,7 +183,7 @@ class DocumentSplitterIT {
 	@DisplayName("split empty string input")
 	void splitEmptyStringInput() {
 		assertUtlToChunksAvailable();
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource())
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource())
 			.preferences(OracleChunkingPreferences.builder().by("words").max(50).build())
 			.build();
 

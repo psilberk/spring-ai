@@ -3,7 +3,7 @@
 This module provides three building blocks for Oracle-based RAG pipelines:
 
 1. `OracleDocumentReader` to load documents from files/directories or Oracle tables
-2. `DocumentSplitter` to chunk text with `DBMS_VECTOR_CHAIN.UTL_TO_CHUNKS`
+2. `OracleDocumentSplitter` to chunk text with `DBMS_VECTOR_CHAIN.UTL_TO_CHUNKS`
 3. `OracleEmbeddingModel` to generate vectors with `DBMS_VECTOR_CHAIN.UTL_TO_EMBEDDINGS`
 
 ## 1) Prerequisites
@@ -158,7 +158,7 @@ Notes:
 - Oracle reference for `UTL_TO_TEXT`:
   https://docs.oracle.com/en/database/oracle/oracle-database/26/vecse/utl_to_text.html
 
-## 5) Split Documents With `DocumentSplitter`
+## 5) Split Documents With `OracleDocumentSplitter`
 
 ### 5.1 Default splitting
 
@@ -166,9 +166,9 @@ Notes:
 import java.util.List;
 
 import org.springframework.ai.document.Document;
-import org.springframework.ai.oracle.chunking.DocumentSplitter;
+import org.springframework.ai.oracle.chunking.OracleDocumentSplitter;
 
-DocumentSplitter splitter = new DocumentSplitter(dataSource);
+OracleDocumentSplitter splitter = new OracleDocumentSplitter(dataSource);
 List<Document> chunks = splitter.split(documents);
 ```
 
@@ -177,7 +177,7 @@ List<Document> chunks = splitter.split(documents);
 ```java
 import org.springframework.ai.oracle.chunking.OracleChunkingPreferences;
 
-DocumentSplitter splitter = DocumentSplitter.builder(dataSource)
+OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource)
         .preferences(OracleChunkingPreferences.builder()
                 .by("words")
                 .max(200)
@@ -194,10 +194,10 @@ List<Document> chunks = splitter.split(documents);
 Use this mode when you already created an Oracle vocabulary and you want chunking boundaries to follow that vocabulary.
 
 ```java
-import org.springframework.ai.oracle.chunking.DocumentSplitter;
+import org.springframework.ai.oracle.chunking.OracleDocumentSplitter;
 import org.springframework.ai.oracle.chunking.OracleChunkingPreferences;
 
-DocumentSplitter splitter = DocumentSplitter.builder(dataSource)
+OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource)
         .preferences(OracleChunkingPreferences.builder()
                 .by("vocabulary")
                 .vocabulary("MY_VOCABULARY")
@@ -229,7 +229,7 @@ End-to-end example:
 OracleDocumentReader reader = new OracleDocumentReader(dataSource, Path.of("/path/to/docs"));
 List<Document> docs = reader.get();
 
-DocumentSplitter vocabSplitter = DocumentSplitter.builder(dataSource)
+OracleDocumentSplitter vocabSplitter = OracleDocumentSplitter.builder(dataSource)
         .preferences(OracleChunkingPreferences.builder()
                 .by("vocabulary")
                 .vocabulary("MY_VOCABULARY")
@@ -345,7 +345,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.springframework.ai.document.Document;
-import org.springframework.ai.oracle.chunking.DocumentSplitter;
+import org.springframework.ai.oracle.chunking.OracleDocumentSplitter;
 import org.springframework.ai.oracle.chunking.OracleChunkingPreferences;
 import org.springframework.ai.oracle.embedding.OracleEmbeddingModel;
 import org.springframework.ai.oracle.embedding.OracleEmbeddingOptions;
@@ -359,7 +359,7 @@ OracleDocumentReader reader = new OracleDocumentReader(dataSource, Path.of("/pat
 List<Document> docs = reader.get();
 
 // 2) Split
-DocumentSplitter splitter = DocumentSplitter.builder(dataSource)
+OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource)
         .preferences(OracleChunkingPreferences.builder().by("words").max(200).overlap(20).build())
         .build();
 List<Document> chunks = splitter.split(docs);

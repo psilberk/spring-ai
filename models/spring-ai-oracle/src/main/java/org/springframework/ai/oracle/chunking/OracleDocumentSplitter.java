@@ -16,7 +16,6 @@
 
 package org.springframework.ai.oracle.chunking;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +36,7 @@ import org.springframework.util.Assert;
  *
  * @author Spring AI Contributors
  */
-public class DocumentSplitter extends TextSplitter {
+public class OracleDocumentSplitter extends TextSplitter {
 
 	private static final String CHUNKING_SQL = "select json_value(t.column_value, '$.chunk_data' returning clob) "
 			+ "as chunk_data from dbms_vector_chain.utl_to_chunks(?, ?) t";
@@ -50,7 +49,7 @@ public class DocumentSplitter extends TextSplitter {
 	 * Create a splitter with default Oracle chunking behavior.
 	 * @param dataSource Oracle data source
 	 */
-	public DocumentSplitter(DataSource dataSource) {
+	public OracleDocumentSplitter(DataSource dataSource) {
 		this(dataSource, Builder.DEFAULT_PREFERENCES.toByteArray());
 	}
 
@@ -59,7 +58,7 @@ public class DocumentSplitter extends TextSplitter {
 	 * @param dataSource Oracle data source
 	 * @param preferencesOson Oracle JSON preferences bytes
 	 */
-	private DocumentSplitter(DataSource dataSource, byte[] preferencesOson) {
+	private OracleDocumentSplitter(DataSource dataSource, byte[] preferencesOson) {
 		Assert.notNull(dataSource, "dataSource must not be null");
 		this.dataSource = dataSource;
 
@@ -178,9 +177,9 @@ public class DocumentSplitter extends TextSplitter {
 		 * Build a splitter from configured options.
 		 * @return configured splitter
 		 */
-		public DocumentSplitter build() {
+		public OracleDocumentSplitter build() {
 			Assert.notNull(this.dataSource, "dataSource must not be null");
-			return new DocumentSplitter(this.dataSource, this.preferences.toByteArray());
+			return new OracleDocumentSplitter(this.dataSource, this.preferences.toByteArray());
 		}
 
 	}

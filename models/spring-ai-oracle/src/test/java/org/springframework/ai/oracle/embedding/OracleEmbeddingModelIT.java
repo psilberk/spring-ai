@@ -16,6 +16,7 @@
 
 package org.springframework.ai.oracle.embedding;
 
+import java.io.IOException;
 import java.sql.Array;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -27,6 +28,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OracleTypes;
 import org.junit.jupiter.api.Assertions;
@@ -38,7 +40,6 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
-import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.oracle.chunking.OracleChunk;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -72,6 +73,8 @@ class OracleEmbeddingModelIT {
 		.provider("database")
 		.model(ONNX_MODEL_NAME)
 		.build();
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private static volatile boolean onnxModelPrepared;
 
@@ -339,7 +342,7 @@ class OracleEmbeddingModelIT {
 			boolean available = isUtlToEmbeddingsInvokable(connection);
 			Assertions.assertTrue(available, "DBMS_VECTOR_CHAIN.UTL_TO_EMBEDDINGS is not available.");
 		}
-		catch (SQLException ex) {
+		catch (SQLException | IOException ex) {
 			Assertions.fail("Could not verify UTL_TO_EMBEDDINGS availability.", ex);
 		}
 	}
@@ -404,8 +407,9 @@ class OracleEmbeddingModelIT {
 	 * @param connection active JDBC connection
 	 * @return {@code true} when invocation succeeds
 	 * @throws SQLException if invocation fails with an unexpected database error
+	 * @throws IOException if probe payload serialization fails
 	 */
-	private static boolean isUtlToEmbeddingsInvokable(Connection connection) throws SQLException {
+	private static boolean isUtlToEmbeddingsInvokable(Connection connection) throws SQLException, IOException {
 		try (PreparedStatement statement = connection.prepareStatement(UTL_TO_EMBEDDINGS_SQL)) {
 			statement.setObject(1, createVectorArrayPayload(connection, List.of("probe")));
 			statement.setObject(2, ONNX_PREFERENCES.toByteArray(), OracleTypes.JSON);
@@ -430,13 +434,15 @@ class OracleEmbeddingModelIT {
 	 * @param inputs text inputs
 	 * @return Oracle vector array payload
 	 * @throws SQLException if JDBC operations fail
+	 * @throws IOException if chunk serialization fails
 	 */
-	private static Array createVectorArrayPayload(Connection connection, List<String> inputs) throws SQLException {
+	private static Array createVectorArrayPayload(Connection connection, List<String> inputs)
+			throws SQLException, IOException {
 		OracleConnection oracleConnection = connection.unwrap(OracleConnection.class);
 		Clob[] payload = new Clob[inputs.size()];
 		for (int i = 0; i < inputs.size(); i++) {
 			Clob clob = connection.createClob();
-			clob.setString(1, ModelOptionsUtils.JSON_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
+			clob.setString(1, OBJECT_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
 			payload[i] = clob;
 		}
 		return oracleConnection.createOracleArray("SYS.VECTOR_ARRAY_T", payload);

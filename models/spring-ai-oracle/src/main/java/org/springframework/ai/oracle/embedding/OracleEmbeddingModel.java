@@ -32,6 +32,7 @@ import java.util.Objects;
 
 import javax.sql.DataSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.ObservationRegistry;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OracleType;
@@ -71,6 +72,8 @@ import org.springframework.util.StringUtils;
 public final class OracleEmbeddingModel extends AbstractEmbeddingModel implements InitializingBean {
 
 	private static final EmbeddingModelObservationConvention DEFAULT_OBSERVATION_CONVENTION = new DefaultEmbeddingModelObservationConvention();
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private static final String EMBEDDING_SQL = "select to_vector(json_value(t.column_value, '$.embed_vector' returning clob)) "
 			+ "as vector from dbms_vector_chain.utl_to_embeddings(?, ?) t";
@@ -617,7 +620,7 @@ public final class OracleEmbeddingModel extends AbstractEmbeddingModel implement
 		Clob[] payload = new Clob[inputs.size()];
 		for (int i = 0; i < inputs.size(); i++) {
 			Clob clob = connection.createClob();
-			clob.setString(1, ModelOptionsUtils.JSON_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
+			clob.setString(1, OBJECT_MAPPER.writeValueAsString(new OracleChunk(i, inputs.get(i))));
 			payload[i] = clob;
 		}
 		return oracleConnection.createOracleArray("SYS.VECTOR_ARRAY_T", payload);

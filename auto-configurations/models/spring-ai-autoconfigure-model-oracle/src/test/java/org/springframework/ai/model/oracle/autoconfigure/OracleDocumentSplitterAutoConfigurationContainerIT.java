@@ -36,11 +36,12 @@ import oracle.jdbc.provider.oson.OsonFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.springframework.ai.oracle.chunking.OracleDocumentSplitter;
 import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import org.springframework.ai.document.Document;
-import org.springframework.ai.oracle.chunking.DocumentSplitter;
+
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -83,7 +84,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 					"spring.ai.oracle.document-splitter.preferences.by=chars",
 					"spring.ai.oracle.document-splitter.preferences.max=50")
 			.run(context -> {
-				DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+				OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 				List<Document> chunks = splitter.split(new Document(CONTENT));
 				assertThat(chunks.size()).isGreaterThan(1);
 			});
@@ -93,7 +94,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 	void splitStringInputWithDefaultConstructor() {
 		assertUtlToChunksAvailable();
 		this.contextRunner.withPropertyValues("spring.ai.model.embedding=oracle").run(context -> {
-			DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+			OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 			List<Document> chunks = splitter.split(new Document(CONTENT));
 			assertThat(chunks).isNotEmpty();
 			assertThat(chunks.stream().map(Document::getText).allMatch(text -> text != null && !text.isBlank()))
@@ -109,7 +110,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 					"spring.ai.oracle.document-splitter.preferences.by=words",
 					"spring.ai.oracle.document-splitter.preferences.max=10")
 			.run(context -> {
-				DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+				OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 				List<Document> chunks = splitter.split(new Document(CONTENT));
 				assertThat(chunks.size()).isGreaterThan(1);
 				assertThat(chunks.stream().map(Document::getText)).allMatch(chunk -> !chunk.trim().startsWith("{"));
@@ -124,7 +125,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 					"spring.ai.oracle.document-splitter.preferences.by=chars",
 					"spring.ai.oracle.document-splitter.preferences.max=50")
 			.run(context -> {
-				DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+				OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 				Document source = new Document(CONTENT, Map.of("a", 1, "b", 2));
 				List<Document> chunks = splitter.split(source);
 				assertThat(chunks.size()).isGreaterThan(1);
@@ -138,7 +139,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 	void splitDocInputWithNullPreferences() {
 		assertUtlToChunksAvailable();
 		this.contextRunner.withPropertyValues("spring.ai.model.embedding=oracle").run(context -> {
-			DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+			OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 			Document source = new Document(CONTENT, Map.of("source", "it", "version", 1));
 			List<Document> chunks = splitter.split(source);
 			assertThat(chunks).isNotEmpty();
@@ -156,7 +157,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 					"spring.ai.oracle.document-splitter.preferences.max=10",
 					"spring.ai.oracle.document-splitter.preferences.split=sentence")
 			.run(context -> {
-				DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+				OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 				List<Document> chunks = splitter.split(new Document(CONTENT));
 				assertThat(chunks.size()).isGreaterThan(1);
 			});
@@ -170,7 +171,7 @@ class OracleDocumentSplitterAutoConfigurationContainerIT {
 					"spring.ai.oracle.document-splitter.preferences.by=words",
 					"spring.ai.oracle.document-splitter.preferences.max=10")
 			.run(context -> {
-				DocumentSplitter splitter = context.getBean(DocumentSplitter.class);
+				OracleDocumentSplitter splitter = context.getBean(OracleDocumentSplitter.class);
 				List<Document> chunks = splitter.split(new Document(""));
 				assertThat(chunks).hasSize(1);
 				assertThat(chunks.get(0).getText()).isEmpty();

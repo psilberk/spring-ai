@@ -41,11 +41,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link DocumentSplitter} builder options and JDBC parameter binding.
+ * Unit tests for {@link OracleDocumentSplitter} builder options and JDBC parameter
+ * binding.
  *
  * @author Spring AI Contributors
  */
-class DocumentSplitterTests {
+class OracleDocumentSplitterTests {
 
 	/**
 	 * Verify OSON preferences are bound when builder options are provided.
@@ -65,7 +66,7 @@ class DocumentSplitterTests {
 		when(resultSet.next()).thenReturn(true, false);
 		when(resultSet.getString("chunk_data")).thenReturn("chunk-1");
 
-		DocumentSplitter splitter = DocumentSplitter.builder(dataSource)
+		OracleDocumentSplitter splitter = OracleDocumentSplitter.builder(dataSource)
 			.preferences(OracleChunkingPreferences.builder()
 				.by("words")
 				.max(100)
@@ -94,7 +95,7 @@ class DocumentSplitterTests {
 		DataSource dataSource = mock(DataSource.class);
 		when(dataSource.getConnection()).thenThrow(new SQLException("db down"));
 
-		DocumentSplitter splitter = new DocumentSplitter(dataSource);
+		OracleDocumentSplitter splitter = new OracleDocumentSplitter(dataSource);
 
 		assertThatThrownBy(() -> splitter.split(new Document("text"))).isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("Failed to split text using Oracle DBMS_VECTOR_CHAIN.UTL_TO_CHUNKS")
@@ -107,7 +108,7 @@ class DocumentSplitterTests {
 	@Test
 	void splitEmptyInputReturnsSingleEmptyChunk() {
 		DataSource dataSource = mock(DataSource.class);
-		DocumentSplitter splitter = new DocumentSplitter(dataSource);
+		OracleDocumentSplitter splitter = new OracleDocumentSplitter(dataSource);
 
 		List<Document> chunks = splitter.split(new Document(""));
 
@@ -200,7 +201,7 @@ class DocumentSplitterTests {
 	 */
 	@Test
 	void builderRejectsNullDataSource() {
-		assertThatThrownBy(() -> DocumentSplitter.builder(null)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> OracleDocumentSplitter.builder(null)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("dataSource must not be null");
 	}
 
@@ -209,7 +210,7 @@ class DocumentSplitterTests {
 	 */
 	@Test
 	void constructorRejectsNullDataSource() {
-		assertThatThrownBy(() -> new DocumentSplitter(null)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> new OracleDocumentSplitter(null)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("dataSource must not be null");
 	}
 

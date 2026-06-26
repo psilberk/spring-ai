@@ -20,8 +20,9 @@ import javax.sql.DataSource;
 
 import org.springframework.ai.model.SpringAIModelProperties;
 import org.springframework.ai.model.SpringAIModels;
-import org.springframework.ai.oracle.chunking.DocumentSplitter;
+
 import org.springframework.ai.oracle.chunking.OracleChunkingPreferences;
+import org.springframework.ai.oracle.chunking.OracleDocumentSplitter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -39,18 +40,19 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(OracleDocumentSplitterProperties.class)
 @ConditionalOnProperty(name = SpringAIModelProperties.EMBEDDING_MODEL, havingValue = SpringAIModels.ORACLE,
 		matchIfMissing = true)
-@ConditionalOnClass({ DocumentSplitter.class, DataSource.class })
+@ConditionalOnClass({ OracleDocumentSplitter.class, DataSource.class })
 public class OracleDocumentSplitterAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DocumentSplitter oracleDocumentSplitter(DataSource dataSource, OracleDocumentSplitterProperties properties) {
-		DocumentSplitter.Builder builder = DocumentSplitter.builder(dataSource);
+	public OracleDocumentSplitter oracleDocumentSplitter(DataSource dataSource,
+			OracleDocumentSplitterProperties properties) {
+		OracleDocumentSplitter.Builder builder = OracleDocumentSplitter.builder(dataSource);
 		applyPreferences(builder, properties.getPreferences());
 		return builder.build();
 	}
 
-	private static void applyPreferences(DocumentSplitter.Builder builder,
+	private static void applyPreferences(OracleDocumentSplitter.Builder builder,
 			OracleDocumentSplitterPreferencesProperties preferenceProperties) {
 		if (!preferenceProperties.isConfigured()) {
 			return;
